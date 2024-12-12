@@ -69,7 +69,7 @@ def generate_box_plot(test_name, values1, values2, unit, p_value):
 
 def find_unit(line, previous_test, previous_result, current_category,selected_categories):
             if line not in [previous_test, previous_result] and "_" not in line and "|" not in line and line not in selected_categories:
-                if current_category in ["Moč chemicky", "Močový sediment"] and len(line) > 7:
+                if current_category in selected_categories and len(line) > 7:
                     return None
                 if current_category == "Močové parametry" and len(line) > 10:
                     return None
@@ -144,7 +144,8 @@ with tab1:
         "Stav séra",
         "Moč chemicky",
         "Močový sediment",
-        "Močové parametry"
+        "Močové parametry",
+        "Doplňující informace"
     ]
     
     if "categories" not in st.session_state:
