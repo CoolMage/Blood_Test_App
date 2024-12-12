@@ -1,0 +1,60 @@
+Unique_Values_Ref,Unique_Values
+Triglycerides,S_Triacylglyceroly
+MCH,B_Barvivo erytr. [MCH]
+Red Blood Cells,B_Erytrocyty [RBC]
+Platelets,B_Trombocyty [PLT]
+Cholesterol,S_Cholesterol
+% Reticulocytes,B_Retikulocyty - relativně
+Total Protein,S_Celková bílkovina
+MCV,B_Střed.obj.erytr. [MCV]
+Aspartate Aminotransferase,S_AST
+Alanine Aminotransferase,S_ALT
+Lymphocytes,B_Lymfocyty - abs.počet
+Eosinophils,B_Eozinofily - abs.počet
+% Neutrophils,B_Neutrofily - relativně
+Basophils,B_Bazofily - abs.počet
+Creatinine,S_Kreatinin
+Phosphorus,S_P - fosfor anorganický
+MCHC,B_Stř.barev.kon. [MCHC]
+Hemoglobin,B_Hemoglobin [HGB]
+% Lymphocytes,B_Lymfocyty - relativně
+% Eosinophils,B_Eozinofily - relativně
+Hematocrit,B_Hematokrit [HCT]
+% Monocytes,B_Monocyty - relativně
+Calcium,S_Ca - vápník
+Alkaline Phosphatase,S_ALP
+White Blood Cells,B_Leukocyty [WBC]
+Glucose,S_Glukóza v séru
+Total Bilirubin,S_Bilirubin celkový
+Creatine Kinase,S_CK - kreatinkináza
+Direct Bilirubin,S_Bilirubin přímý
+Monocytes,B_Monocyty - abs.počet
+Albumin,S_Albumin
+Neutrophils,B_Neutrofily - abs.počet
+Urea,S_Urea - močovina
+Reticulocytes,B_Retikulocyty - abs.počet
+Large unstained cells,
+Amylase,
+Fibrinogen,
+MPV,
+CH,
+A/G Ratio,
+HDW,
+Prothrombin Time,
+Indirect Bilirubin,
+RDW,
+% Large unstained cells,
+CHCM,
+PDW,
+MG,
+Potassium,S_K - draslík
+Chloride,
+Lactate Dehydrogenase,
+Activated Partial Prothrombin Time,
+Lipase,
+Sodium,S_Na - sodík
+Globulin,
+% Basophils,B_Bazofily - relativně
+,
+,
+,

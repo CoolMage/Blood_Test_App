@@ -1,0 +1,57 @@
+TEST,UNIT,N,MEAN,S.D,RANGE
+Fibrinogen,mg/dL,141,148.1,14.5,115.7-173
+Prothrombin Time,sec,153,13.94,1.02,11.55-16.1
+Activated Partial Prothrombin Time,sec,152,24.59,4.81,17.4-34.4
+Phosphorus,mg/dL,78,6.23,1.24,3.64-8.4
+Calcium,mg/dL,78,10.3,0.7,9.1-11.9
+Total Protein,g/dL,77,6.3,0.5,5.6-7.6
+Triglycerides,mg/dL,77,62.0,32.0,27-160
+Cholesterol,mg/dL,68,59.0,15.0,37-95
+Glucose,mg/dL,78,141.0,19.0,106-184
+Creatinine,mg/dL,88,0.4,0.1,0.3-0.5
+Indirect Bilirubin,mg/dL,66,0.06,0.03,0-0.1
+Direct Bilirubin,mg/dL,47,0.04,0.01,0.03-0.06
+Total Bilirubin,mg/dL,78,0.1,0.04,0.04-0.2
+Alkaline Phosphatase,U/L,88,66.0,21.0,36-131
+Aspartate Aminotransferase,U/L,88,96.0,24.0,63-175
+Alanine Aminotransferase,U/L,87,30.0,8.0,19-48
+Lactate Dehydrogenase,U/L,10,1305.0,510.0,272-1965
+Creatine Kinase,U/L,46,846.0,246.0,460-1230
+MG,mg/dL,15,2.1,0.1,1.9-2.2
+Lipase,U/L,10,9.0,2.0,7-14
+Amylase,U/L,10,1557.0,316.0,1223-2109
+Albumin,g/dL,78,4.1,0.3,3.6-4.7
+Globulin,g/dL,66,2.1,0.2,1.8-2.5
+A/G Ratio,ratio,66,1.91,0.24,1.5-2.33
+Urea,mg/dL,87,15.7,2.3,10.7-20
+Sodium,mmol/L,78,143.0,2.0,137-147
+Potassium,mmol/L,78,4.55,0.53,3.88-6.11
+Chloride,mmol/L,78,103.0,2.0,98-106
+MPV,fL(μm³),166,7.6,0.9,6.1-9.5
+Platelets,10³/μL,167,846.0,160.0,574-1253
+RDW,%,164,13.0,1.1,11.6-16.2
+MCHC,g/dL,167,35.1,1.5,31.9-38.5
+MCH,pg,167,17.8,0.8,16.3-19.5
+Hematocrit,%,167,44.2,3.4,38.5-52
+Hemoglobin,g/dL,167,15.5,1.0,13.6-17.4
+Red Blood Cells,10⁶/μL,167,8.69,0.66,7.62-9.99
+White Blood Cells,10³/μL,167,4.28,2.14,1.98-11.06
+MCV,fL(μm³),167,50.7,2.3,46.3-56.2
+Neutrophils,10³/μL,165,0.87,0.42,0.33-1.89
+Lymphocytes,10³/μL,165,3.19,1.89,1.19-9.45
+Monocytes,10³/μL,167,0.09,0.06,0.03-0.27
+Eosinophils,10³/μL,166,0.07,0.04,0.01-0.19
+Basophils,10³/μL,167,0.01,0.01,0-0.04
+Reticulocytes,10⁹/L,156,166.5,28.8,120.8-237.1
+CHCM,g/dL,167,35.3,1.4,32.4-37.8
+CH,pg,167,17.9,0.8,16.5-19.4
+HDW,g/dL,167,2.75,0.29,2.22-3.29
+PDW,%,167,55.9,6.6,45.6-71.4
+% Neutrophils,%,167,22.2,10.0,9-49.3
+% Lymphocytes,%,167,73.3,10.6,44.7-87.1
+% Monocytes,%,167,2.0,0.7,1-3.6
+% Eosinophils,%,166,1.7,0.9,0.4-4.4
+% Basophils,%,167,0.3,0.2,0-0.6
+% Large unstained cells,10³/μL,162,0.5,0.3,0.1-1.2
+Large unstained cells,%,156,0.02,0.02,0-0.07
+% Reticulocytes,%,156,1.9,0.3,1.4-2.8

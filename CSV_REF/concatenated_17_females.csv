@@ -1,0 +1,57 @@
+TEST,UNIT,N,MEAN,S.D,RANGE
+MPV,fL(μm³),165,7.9,0.9,6.4-9.5
+Platelets,10³/μL,165,836.0,132.0,599-1144
+RDW,%,165,12.0,1.0,10.6-14.6
+MCHC,g/dL,166,35.1,1.1,33.2-37.8
+MCH,pg,166,18.8,0.7,17.6-20.3
+Hematocrit,%,166,43.9,2.9,38.5-49.2
+Hemoglobin,g/dL,166,15.4,0.9,13.7-17.2
+Red Blood Cells,10⁶/μL,166,8.2,0.55,7.16-9.24
+White Blood Cells,10³/μL,165,2.67,1.62,0.96-7.88
+MCV,fL(μm³),166,53.6,1.7,50.3-57
+Neutrophils,10³/μL,164,0.47,0.25,0.15-1.11
+Lymphocytes,10³/μL,165,2.06,1.41,0.68-6.8
+Monocytes,10³/μL,165,0.05,0.03,0.01-0.13
+Eosinophils,10³/μL,165,0.05,0.03,0.01-0.14
+Basophils,10³/μL,163,0.01,0.01,0-0.02
+Reticulocytes,10⁹/L,154,186.4,47.8,108.3-312.6
+CHCM,g/dL,166,35.5,1.2,33.3-38.1
+CH,pg,166,19.0,0.6,17.9-20.2
+HDW,g/dL,166,2.27,0.18,1.95-2.59
+PDW,%,166,55.9,5.8,46.8-68.5
+% Neutrophils,%,165,19.3,8.3,8.8-43.8
+% Lymphocytes,%,165,75.8,9.3,48.9-88.1
+% Monocytes,%,165,2.0,0.7,1-3.6
+% Eosinophils,%,165,1.9,1.2,0.3-4.7
+% Basophils,%,166,0.2,0.2,0-0.7
+% Large unstained cells,10³/μL,164,0.4,0.3,0-1
+Large unstained cells,%,162,0.01,0.01,0-0.05
+% Reticulocytes,%,154,2.3,0.6,1.4-3.9
+Phosphorus,mg/dL,77,6.66,1.15,4.53-9.51
+Calcium,mg/dL,77,10.6,0.7,9.5-12.1
+Total Protein,g/dL,77,6.6,0.7,5.7-8.3
+Triglycerides,mg/dL,76,42.0,35.0,16-175
+Cholesterol,mg/dL,67,50.0,19.0,23-97
+Glucose,mg/dL,77,119.0,16.0,89-163
+Creatinine,mg/dL,88,0.4,0.1,0.3-0.6
+Indirect Bilirubin,mg/dL,65,0.08,0.03,0.02-0.13
+Direct Bilirubin,mg/dL,50,0.04,0.01,0.03-0.07
+Total Bilirubin,mg/dL,77,0.13,0.04,0.07-0.21
+Alkaline Phosphatase,U/L,87,30.0,11.0,18-62
+Aspartate Aminotransferase,U/L,87,101.0,36.0,64-222
+Alanine Aminotransferase,U/L,87,30.0,15.0,14-64
+Lactate Dehydrogenase,U/L,10,971.0,438.0,256-1552
+Creatine Kinase,U/L,45,702.0,261.0,218-1320
+MG,mg/dL,15,2.2,0.1,1.9-2.4
+Lipase,U/L,11,7.0,0.0,7-8
+Amylase,U/L,11,1211.0,215.0,866-1642
+Albumin,g/dL,77,4.6,0.5,3.7-5.8
+Globulin,g/dL,65,1.9,0.2,1.6-2.3
+A/G Ratio,ratio,65,2.31,0.34,1.64-3.07
+Urea,mg/dL,88,17.5,3.9,11.7-25
+Sodium,mmol/L,77,141.0,3.0,135-146
+Potassium,mmol/L,77,4.07,0.42,3.37-5.11
+Chloride,mmol/L,77,102.0,3.0,97-106
+Fibrinogen,mg/dL,135,122.9,12.4,100.6-145.9
+Prothrombin Time,sec,148,13.34,0.94,11.3-15.2
+Activated Partial Prothrombin Time,sec,148,21.8,4.43,16.3-36.2
