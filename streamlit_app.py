@@ -337,9 +337,9 @@ with tab1:
             df = pd.DataFrame(data)
             
             # Store the extracted data in session state
-            if "extracted_data" not in st.session_state:
-                st.session_state.extracted_data = []
-            st.session_state.extracted_data.append(df)
+            # if "extracted_data" not in st.session_state:
+             #   st.session_state.extracted_data = []
+            #st.session_state.extracted_data.append(df)
       #      if df.empty:
        #         st.error("No data was extracted from the PDF. Please check the file content.")
         #    else:
