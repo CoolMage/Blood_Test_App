@@ -1,3 +1,5 @@
 streamlit
-PyMuPDF
 pandas
+plotly
+pymupdf
+scipy
