@@ -379,9 +379,10 @@ with tab2:
     sex = sex_mapping[selected_display_sex]
 
     # Load reference files
-    ref_dir = "/workspaces/Blood_Test_App/CSV_KEY/combined_unique_values.csv"
-    age_sex_dir = "/workspaces/Blood_Test_App/CSV_REF"
-
+    #ref_dir = "/workspaces/Blood_Test_App/CSV_KEY/combined_unique_values.csv"
+    #age_sex_dir = "/workspaces/Blood_Test_App/CSV_REF"
+    ref_dir = os.path.join("CSV_KEY", "combined_unique_values.csv")
+    age_sex_dir = "CSV_REF"
     # Load the reference key table
     ref_test_key_table = pd.read_csv(ref_dir)
 
