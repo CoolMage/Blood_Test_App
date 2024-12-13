@@ -23,7 +23,7 @@ def load_data(files):
 
 # Function to prepare data for a specific test
 def prepare_test_data(data_group1, data_group2, test_name):
-    pattern = r"[<> ]"
+    pattern = r"[<> ]"  # Pattern to remove unwanted characters
     group1_values = data_group1[data_group1['Test'] == test_name]['Výsledek']
     group2_values = data_group2[data_group2['Test'] == test_name]['Výsledek']
 
@@ -31,16 +31,20 @@ def prepare_test_data(data_group1, data_group2, test_name):
     group1_values = group1_values.astype(str)
     group2_values = group2_values.astype(str)
 
-    # Replace commas with dots and convert to numeric
-    group1_values = pd.to_numeric(group1_values.str.replace(",", ".", regex=False), errors='coerce').dropna()
-    group2_values = pd.to_numeric(group2_values.str.replace(",", ".", regex=False), errors='coerce').dropna()
+    # Replace unwanted characters (e.g., <, >, spaces) with an empty string
+    group1_values = group1_values.str.replace(pattern, "", regex=True)
+    group2_values = group2_values.str.replace(pattern, "", regex=True)
 
-    # Remove unwanted characters
-    group1_values = pd.to_numeric(group1_values.astype(str).str.replace(pattern, "", regex=True), errors='coerce').dropna()
-    group2_values = pd.to_numeric(group2_values.astype(str).str.replace(pattern, "", regex=True), errors='coerce').dropna()
+    # Replace commas with dots (for numeric conversion)
+    group1_values = group1_values.str.replace(",", ".", regex=False)
+    group2_values = group2_values.str.replace(",", ".", regex=False)
 
-    
+    # Convert to numeric and drop NaN values
+    group1_values = pd.to_numeric(group1_values, errors='coerce').dropna()
+    group2_values = pd.to_numeric(group2_values, errors='coerce').dropna()
+
     return group1_values, group2_values
+
 
 # Function to perform statistical test
 def perform_statistical_test(values1, values2):
@@ -91,13 +95,15 @@ def find_hodnoceni(lines, current_index):
             return line
     return None
 
-def unit_conversion(test, value, from_unit, to_unit, molecular_weight=None, unique_id=None):
+def unit_conversion(test, values, from_unit, to_unit, molecular_weight=None, unique_id=None):
     """Perform unit conversion based on predefined rules."""
     conversion_map = {
         ("µmol/l", "mg/dl"): lambda x, mw: x * mw / 10000,
         ("mg/dl", "µmol/l"): lambda x, mw: x * 10000 / mw,
         ("mg/dl", "mmol/l"): lambda x, mw: x * 10 / mw,
         ("10³/μl", "10^9/l"): lambda x: x * 1,
+        ("10⁹/l", "10^9/l"): lambda x: x * 1,
+        ("mmol/l", "mmol/l"): lambda x: x * 1,
         ("10⁶/μl", "10^12/l"): lambda x: x * 1,
         ("fl(μm³)", "fl"): lambda x: x * 1,
         ("g/dl", "mg/dl"): lambda x: x * 100,
@@ -109,9 +115,10 @@ def unit_conversion(test, value, from_unit, to_unit, molecular_weight=None, uniq
 
     if (from_unit, to_unit) in conversion_map:
         conversion_func = conversion_map[(from_unit, to_unit)]
-        if "mw" in conversion_func.__code__.co_varnames and molecular_weight is None:
-            st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
-            # Add a unique_id argument to the key
+        requires_mw = "mw" in conversion_func.__code__.co_varnames
+
+        # Prompt for molecular weight if required
+        if requires_mw and molecular_weight is None:
             molecular_weight = st.number_input(
                 f"Enter molecular weight for {test} (required for unit conversion):",
                 min_value=0.0,
@@ -120,11 +127,18 @@ def unit_conversion(test, value, from_unit, to_unit, molecular_weight=None, uniq
                 key=f"{test}_{from_unit}_{to_unit}_mw_{unique_id}",
             )
             if not molecular_weight:
-                return value  # Return original value if molecular weight is not provided
-        return conversion_func(value, molecular_weight) if molecular_weight else conversion_func(value)
+                st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
+                st.warning("Molecular weight is required for the conversion. Returning original values.")
+                return values  # Return original values if molecular weight is not provided
+
+        # Perform conversion for each value
+        converted_values = [conversion_func(value, molecular_weight) if requires_mw else conversion_func(value) for value in values]
+        return converted_values
     else:
-        st.warning(f"No conversion defined for {from_unit} to {to_unit}. Returning original value.")
-        return value
+        st.warning(f"No conversion defined for {from_unit} to {to_unit}. Returning original values.")
+        return values
+
+
 
 
 
@@ -358,63 +372,75 @@ with tab2:
                         ref_range = ref_row["RANGE"].iloc[0]
                         ref_min, ref_max = map(float, ref_range.replace(" ", "").split("-"))
                         ref_unit = ref_row["UNIT"].iloc[0]
+                    else:
+                        st.warning(f"No reference range found for {selected_test}.")
+                        ref_min, ref_max, ref_unit = None, None, None
+                else:
+                    st.warning(f"No reference data available for {selected_test}.")
+                    ref_min, ref_max, ref_unit = None, None, None
 
-                        molecular_weight = None
-                        if ref_unit != group1_unit:
-                            st.warning(f"Conversion from {ref_unit} to {group1_unit} requires molecular weight!")
-                            molecular_weight = st.number_input(
-                                f"Enter molecular weight for {selected_test} (required for unit conversion):",
-                                min_value=0.0,
-                                step=0.1,
-                                format="%.2f",
-                                key=f"{selected_test}_molecular_weight",
-                            )
-                            
-                        # Perform the conversion only if molecular_weight is provided
-                        if molecular_weight and ref_unit != group1_unit:
-                            try:
-                                ref_min = unit_conversion(selected_test, ref_min, ref_unit.lower(), group1_unit.lower(), molecular_weight=molecular_weight)
-                                ref_max = unit_conversion(selected_test, ref_max, ref_unit.lower(), group1_unit.lower(), molecular_weight=molecular_weight)
-                            except Exception as e:
-                                st.error(f"Error in conversion: {e}")
-                                ref_min, ref_max = None, None
+                # Prompt the user to set manual limits if no reference range is found
+                if ref_min is None or ref_max is None:
+                    st.info(f"No valid reference range detected for {selected_test}. Please enter manual limits.")
+                    ref_min = st.number_input(f"Set manual lower limit for {selected_test}:", value=0.0, step=0.1, format="%.2f", key=f"{selected_test}_manual_min")
+                    ref_max = st.number_input(f"Set manual upper limit for {selected_test}:", value=0.0, step=0.1, format="%.2f", key=f"{selected_test}_manual_max")
+                    ref_unit = group1_unit  # Assume the unit matches the group's unit
 
-                        # Only add shapes if ref_min and ref_max are valid
-                        if ref_min is not None and ref_max is not None:
-                            # Add a shaded region for the reference range
-                            fig.add_shape(
-                                type="rect",
-                                x0=-0.5,  # Extend the reference range across the x-axis
-                                x1=1.5,   # Assuming there are two groups (Group 1 and Group 2)
-                                y0=ref_min,
-                                y1=ref_max,
-                                fillcolor="rgba(0, 128, 0, 0.2)",  # Semi-transparent green
-                                line=dict(width=0),
-                            )
+                # Perform unit conversion if necessary
+                molecular_weight = None
+                if ref_unit != group1_unit:
+                    try:
+                        ref_min, ref_max = unit_conversion(selected_test, [ref_min, ref_max], str(ref_unit).lower(), str(group1_unit).lower(), molecular_weight=molecular_weight)
+                        ref_min=round(ref_min,3)
+                        ref_max=round(ref_max,3)
+                    except Exception as e:
+                        st.error(f"Error in conversion: {e}")
+                        ref_min, ref_max = None, None
 
-                            # Optionally, add lines for the reference range
-                            fig.add_shape(
-                                type="line",
-                                x0=-0.5,
-                                x1=1.5,
-                                y0=ref_min,
-                                y1=ref_min,
-                                line=dict(color="green", dash="dash"),
-                            )
-                            fig.add_shape(
-                                type="line",
-                                x0=-0.5,
-                                x1=1.5,
-                                y0=ref_max,
-                                y1=ref_max,
-                                line=dict(color="green", dash="dash"),
-                            )
-                        else:
-                            st.warning("Reference range could not be plotted due to missing or invalid data.")
+                # Only add shapes if ref_min and ref_max are valid
+                if ref_min is not None and ref_max is not None:
+                    # Add a shaded region for the reference range
+                    fig.add_shape(
+                        type="rect",
+                        x0=-0.5,  # Extend the reference range across the x-axis
+                        x1=1.5,   # Assuming there are two groups (Group 1 and Group 2)
+                        y0=ref_min,
+                        y1=ref_max,
+                        fillcolor="rgba(0, 128, 0, 0.2)",  # Semi-transparent green
+                        line=dict(width=0),
+                    )
+
+                    # Optionally, add lines for the reference range
+                    fig.add_shape(
+                        type="line",
+                        x0=-0.5,
+                        x1=1.5,
+                        y0=ref_min,
+                        y1=ref_min,
+                        line=dict(color="green", dash="dash"),
+                    )
+                    fig.add_shape(
+                        type="line",
+                        x0=-0.5,
+                        x1=1.5,
+                        y0=ref_max,
+                        y1=ref_max,
+                        line=dict(color="green", dash="dash"),
+                    )
+                else:
+                    st.warning("Reference range could not be plotted due to missing or invalid data.")
+
+
 
                 # Display the updated plot
                 st.plotly_chart(fig, use_container_width=True)
+                try:
+                    st.write(f"Reference Limits: {ref_min}-{ref_max} [{group1_unit}]")
+                except Exception as e:
+                    st.error(f"There are no reference values for this graph.")
 
+
+                
 
 
 
