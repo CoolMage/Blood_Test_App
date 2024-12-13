@@ -8,7 +8,7 @@ import glob
 import os
 
 
-
+#streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false
 
 # Streamlit app title
 st.title("PDF Data Extractor and Blood Plot Comparison")
@@ -70,6 +70,95 @@ def generate_box_plot(test_name, values1, values2, unit, p_value):
     )
 
     return fig
+
+def generate_bar_graph(test_name, values1, values2, unit, p_value):
+    fig = go.Figure()
+
+    # Add bars for Group 1
+    fig.add_trace(go.Bar(
+        x=["Group 1"],
+        y=values1,
+        name="Group 1",
+        marker_color="blue"
+    ))
+
+    # Add bars for Group 2
+    fig.add_trace(go.Bar(
+        x=["Group 2"],
+        y=values2,
+        name="Group 2",
+        marker_color="green"
+    ))
+
+    fig.update_traces(overwrite=True, marker={"opacity": 0.4})
+    # Add statistical test result to the title
+    p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
+    fig.update_layout(
+        title=f"Comparison of {test_name}<br><sup>{p_value_text}</sup>",
+        xaxis_title="Groups",
+        yaxis_title=f"{unit or 'Unit'}",
+        barmode="group",  # Grouped bar chart
+        legend=dict(title="Groups"),
+    )
+
+    return fig
+
+def add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba(0, 128, 0, 0.2)", line_color="green", line_dash="dash"):
+    """
+    Adds a reference range as a shaded rectangle and dashed boundary lines to a Plotly figure.
+
+    Parameters:
+    - fig: plotly.graph_objects.Figure
+        The figure to which the reference range will be added.
+    - ref_min: float
+        The lower limit of the reference range.
+    - ref_max: float
+        The upper limit of the reference range.
+    - group_count: int, optional (default=2)
+        Number of groups in the x-axis (used to extend the shaded region).
+    - fillcolor: str, optional (default="rgba(0, 128, 0, 0.2)")
+        Color of the shaded rectangle (in RGBA format).
+    - line_color: str, optional (default="green")
+        Color of the boundary lines.
+    - line_dash: str, optional (default="dash")
+        Dash style of the boundary lines.
+
+    Returns:
+    - fig: plotly.graph_objects.Figure
+        The updated figure with the reference range added.
+    """
+    # Add shaded rectangle for the reference range
+    fig.add_shape(
+        type="rect",
+        x0=-0.5,
+        x1=group_count - 0.5,  # Extend based on group count
+        y0=ref_min,
+        y1=ref_max,
+        fillcolor=fillcolor,
+        line=dict(width=0),  # No border for the rectangle
+    )
+
+    # Add dashed lines for the lower and upper boundaries of the reference range
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_min,
+        y1=ref_min,
+        line=dict(color=line_color, dash=line_dash),
+    )
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_max,
+        y1=ref_max,
+        line=dict(color=line_color, dash=line_dash),
+    )
+
+    return fig
+
+
 
 def find_unit(line, previous_test, previous_result, current_category,selected_categories):
             if line not in [previous_test, previous_result] and "_" not in line and "|" not in line and line not in selected_categories:
@@ -362,7 +451,8 @@ with tab2:
 
                 # Generate box plot
                 fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value)
-        
+                #fig2 = generate_bar_graph(selected_test, group1_values, group2_values, group1_unit, p_value)
+
                 # Add reference range to the plot as a shaded region or horizontal lines
                 # Add reference range to the plot as a shaded region or horizontal lines
                 if not df_ref_vel.empty and selected_test in ref_test_key_table["Unique_Values"].values:
@@ -400,40 +490,22 @@ with tab2:
                 # Only add shapes if ref_min and ref_max are valid
                 if ref_min is not None and ref_max is not None:
                     # Add a shaded region for the reference range
-                    fig.add_shape(
-                        type="rect",
-                        x0=-0.5,  # Extend the reference range across the x-axis
-                        x1=1.5,   # Assuming there are two groups (Group 1 and Group 2)
-                        y0=ref_min,
-                        y1=ref_max,
-                        fillcolor="rgba(0, 128, 0, 0.2)",  # Semi-transparent green
-                        line=dict(width=0),
-                    )
+                    fig = add_reference_range(fig, ref_min, ref_max)
+                    #fig2 = add_reference_range(fig2, ref_min, ref_max)
 
-                    # Optionally, add lines for the reference range
-                    fig.add_shape(
-                        type="line",
-                        x0=-0.5,
-                        x1=1.5,
-                        y0=ref_min,
-                        y1=ref_min,
-                        line=dict(color="green", dash="dash"),
-                    )
-                    fig.add_shape(
-                        type="line",
-                        x0=-0.5,
-                        x1=1.5,
-                        y0=ref_max,
-                        y1=ref_max,
-                        line=dict(color="green", dash="dash"),
-                    )
                 else:
                     st.warning("Reference range could not be plotted due to missing or invalid data.")
 
 
-
-                # Display the updated plot
                 st.plotly_chart(fig, use_container_width=True)
+                # Display the updated plot
+                #col3, col4 = st.columns(2)
+
+                #with col3:
+                #    st.plotly_chart(fig, use_container_width=True)
+                #with col4:
+                #    st.plotly_chart(fig2, use_container_width=True)
+                
                 try:
                     st.write(f"Reference Limits: {ref_min}-{ref_max} [{group1_unit}]")
                 except Exception as e:
