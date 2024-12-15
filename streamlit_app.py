@@ -520,10 +520,12 @@ with tab2:
                         ref_min, ref_max = map(float, ref_range.replace(" ", "").split("-"))
                         ref_unit = ref_row["UNIT"].iloc[0]
                     else:
-                        st.warning(f"No reference range found for {selected_test}.")
+                        #st.warning(f"No reference range found for {selected_test}.")
+                        key_name = None
                         ref_min, ref_max, ref_unit = None, None, None
                 else:
-                    st.warning(f"No reference data available for {selected_test}.")
+                    #st.warning(f"No reference data available for {selected_test}.")
+                    key_name = None
                     ref_min, ref_max, ref_unit = None, None, None
 
                 # Prompt the user to set manual limits if no reference range is found
@@ -535,7 +537,7 @@ with tab2:
 
                 # Perform unit conversion if necessary
                 molecular_weight = None
-                if ref_unit != group1_unit:
+                if ref_unit != group1_unit and key_name is not None:
                     try:
                         ref_min, ref_max = unit_conversion(key_name, [ref_min, ref_max], str(ref_unit).lower(), str(group1_unit).lower(), molecular_weight=molecular_weight)
                         ref_min=round(ref_min,3)
