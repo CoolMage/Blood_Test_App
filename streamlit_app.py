@@ -184,7 +184,7 @@ def find_hodnoceni(lines, current_index):
             return line
     return None
 
-def unit_conversion(test, values, from_unit, to_unit, molecular_weight=None, unique_id=None):
+def unit_conversion(key_name, values, from_unit, to_unit, molecular_weight=None, unique_id=None):
     """Perform unit conversion based on predefined rules."""
     conversion_map = {
         ("µmol/l", "mg/dl"): lambda x, mw: x * mw / 10000,
@@ -202,19 +202,69 @@ def unit_conversion(test, values, from_unit, to_unit, molecular_weight=None, uni
         ("mg/dl", "g/dl"): lambda x: x / 100,
     }
 
+    molecular_masses = {
+    'Leukocytes (WBC)': None,  # White blood cells are complex cells with varying masses
+    'Hemoglobin (HGB)': 64500,  # Hemoglobin A has a molecular mass of approximately 64,500 u
+    'Hematocrit (HCT)': None,  # Hematocrit is a ratio and does not have a molecular mass
+    'Erythrocytes (RBC)': None,  # Red blood cells are complex cells with varying masses
+    'Mean Corpuscular Volume (MCV)': None,  # MCV is a measurement of volume, not a substance
+    'Mean Corpuscular Hemoglobin (MCH)': None,  # MCH is a calculated value, not a distinct substance
+    'Mean Corpuscular Hemoglobin Concentration (MCHC)': None,  # MCHC is a concentration measurement
+    'Red Cell Distribution Width (RDW-CV)': None,  # RDW-CV is a statistical measure
+    'Platelets (PLT)': None,  # Platelets are cell fragments with varying masses
+    'Reticulocytes': None,  # Reticulocytes are immature red blood cells with varying masses
+    'Neutrophils': None,  # Neutrophils are complex cells with varying masses
+    'Lymphocytes': None,  # Lymphocytes are complex cells with varying masses
+    'Monocytes': None,  # Monocytes are complex cells with varying masses
+    'Eosinophils': None,  # Eosinophils are complex cells with varying masses
+    'Basophils': None,  # Basophils are complex cells with varying masses
+    'Sodium (Na)': 22.99,  # Atomic mass of sodium
+    'Potassium (K)': 39.10,  # Atomic mass of potassium
+    'Calcium (Ca)': 40.08,  # Atomic mass of calcium
+    'Phosphorus (P, inorganic)': 30.97,  # Atomic mass of phosphorus
+    'Urea': 60.06,  # Molecular mass of urea (CH4N2O)
+    'Creatinine': 113.12,  # Molecular mass of creatinine (C4H7N3O)
+    'Uric Acid': 168.11,  # Molecular mass of uric acid (C5H4N4O3)
+    'Bilirubin (total and direct)': 584.65,  # Molecular mass of bilirubin (C33H36N4O6)
+    'ALT (Alanine Aminotransferase)': None,  # ALT is an enzyme with a complex structure
+    'AST (Aspartate Aminotransferase)': None,  # AST is an enzyme with a complex structure
+    'GGT (Gamma-Glutamyl Transferase)': None,  # GGT is an enzyme with a complex structure
+    'ALP (Alkaline Phosphatase)': None,  # ALP is an enzyme with a complex structure
+    'Bile Acids': None,  # Bile acids are a group of substances with varying masses
+    'Total Protein': None,  # Total protein represents a mixture of proteins with varying masses
+    'Albumin': 66439,  # Molecular mass of human serum albumin
+    'Glucose (serum)': 180.16,  # Molecular mass of glucose (C6H12O6)
+    'Cholesterol': 386.65,  # Molecular mass of cholesterol (C27H46O)
+    'Triglycerides': None,  # Triglycerides vary in structure and molecular mass
+    'Iron (Fe)': 55.85,  # Atomic mass of iron
+    'Jaundice (Ikterita)': None,  # Jaundice is a condition, not a substance
+    'Hemolysis': None,  # Hemolysis is a process, not a substance
+    'Lipemia': None,  # Lipemia refers to the presence of excess lipids in the blood
+}
+
     if (from_unit, to_unit) in conversion_map:
         conversion_func = conversion_map[(from_unit, to_unit)]
         requires_mw = "mw" in conversion_func.__code__.co_varnames
 
         # Prompt for molecular weight if required
         if requires_mw and molecular_weight is None:
-            molecular_weight = st.number_input(
-                f"Enter molecular weight for {test} (required for unit conversion):",
-                min_value=0.0,
-                step=0.1,
-                format="%.2f",
-                key=f"{test}_{from_unit}_{to_unit}_mw_{unique_id}",
-            )
+            matches = [key for key in molecular_masses if key_name in key]
+            if matches:
+                molecular_weight = molecular_masses[matches[0]]
+                st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
+                st.warning(f"The molecular weight is in the database! -- {molecular_weight} g/mol")
+            else:
+                print(f"No molecular weight for {key_name} in database.")
+                
+
+            #molecular_weight = st.number_input(
+             #   f"Enter molecular weight for {test} (required for unit conversion):",
+              #  min_value=0.0,
+               # step=0.1,
+                #format="%.2f",
+                #key=f"{test}_{from_unit}_{to_unit}_mw_{unique_id}",
+            #)
+
             if not molecular_weight:
                 st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
                 st.warning("Molecular weight is required for the conversion. Returning original values.")
@@ -368,15 +418,21 @@ with tab1:
 with tab2:
 
     # Input fields for age and sex
-    st.write("Enter demographic information for reference data retrieval:")
-    age = st.text_input("Enter Age:", "")
+    st.write("Enter information for reference data retrieval:")
+    #age = st.text_input("Enter Age:", "")
     sex_mapping = {
     "Male": "_male",
     "Female": "_female"
     }
-    selected_display_sex = st.selectbox("Select Sex:", options=list(sex_mapping.keys()))
+    age_mapping = {
+    "8-16": "16",
+    "17": "17"
+    }
+    selected_display_age = st.selectbox("Select animal Age [weeks]):", options=list(age_mapping.keys()))
+    selected_display_sex = st.selectbox("Select animal Sex:", options=list(sex_mapping.keys()))
     # Get the underlying value based on the selected display value
     sex = sex_mapping[selected_display_sex]
+    age = age_mapping[selected_display_age]
 
     # Load reference files
     #ref_dir = "/workspaces/Blood_Test_App/CSV_KEY/combined_unique_values.csv"
@@ -481,7 +537,7 @@ with tab2:
                 molecular_weight = None
                 if ref_unit != group1_unit:
                     try:
-                        ref_min, ref_max = unit_conversion(selected_test, [ref_min, ref_max], str(ref_unit).lower(), str(group1_unit).lower(), molecular_weight=molecular_weight)
+                        ref_min, ref_max = unit_conversion(key_name, [ref_min, ref_max], str(ref_unit).lower(), str(group1_unit).lower(), molecular_weight=molecular_weight)
                         ref_min=round(ref_min,3)
                         ref_max=round(ref_max,3)
                     except Exception as e:
@@ -511,9 +567,3 @@ with tab2:
                     st.write(f"Reference Limits: {ref_min}-{ref_max} [{group1_unit}]")
                 except Exception as e:
                     st.error(f"There are no reference values for this graph.")
-
-
-                
-
-
-
