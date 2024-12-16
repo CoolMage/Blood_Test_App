@@ -54,12 +54,12 @@ def perform_statistical_test(values1, values2):
     return None
 
 # Function to generate a box plot
-def generate_box_plot(test_name, values1, values2, unit, p_value):
+def generate_box_plot(test_name, values1, values2, unit, p_value,group_name1,group_name2):
     fig = go.Figure()
 
     # Add box plots for both groups
-    fig.add_trace(go.Box(y=values1, name="Group 1", boxpoints='all', jitter=0.3, pointpos=-1.8))
-    fig.add_trace(go.Box(y=values2, name="Group 2", boxpoints='all', jitter=0.3, pointpos=-1.8))
+    fig.add_trace(go.Box(y=values1, name=f"{group_name1}", boxpoints='all', jitter=0.3, pointpos=-1.8))
+    fig.add_trace(go.Box(y=values2, name=f"{group_name2}", boxpoints='all', jitter=0.3, pointpos=-1.8))
 
     # Add statistical test result to the title
     p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
@@ -418,7 +418,10 @@ with tab1:
 with tab2:
 
     # Input fields for age and sex
-    st.write("Enter information for reference data retrieval:")
+    st.markdown(
+    "<div style='font-size:24px; font-weight:bold;'>Enter information for reference data retrieval:</div>",
+    unsafe_allow_html=True
+    )
     #age = st.text_input("Enter Age:", "")
     sex_mapping = {
     "Male": "_male",
@@ -457,6 +460,19 @@ with tab2:
         if "extracted_data" in st.session_state and st.session_state.extracted_data
         else pd.DataFrame()
     )
+
+    st.markdown(
+    "<div style='font-size:24px; font-weight:bold;'>Enter the names of the comparable groups:</div>",
+    unsafe_allow_html=True
+    )
+
+    group_name1 = st.text_input("Enter name of Group1:")
+    if not group_name1:
+        group_name1 = "Group1"
+    group_name2 = st.text_input("Enter name of Group2:")
+    if not group_name2:
+        group_name2 = "Group2"
+        
 
     st.write("Upload CSV files for both groups to generate box plots for comparison.")
     col1, col2 = st.columns(2)
@@ -507,7 +523,7 @@ with tab2:
                 p_value = perform_statistical_test(group1_values, group2_values)
 
                 # Generate box plot
-                fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value)
+                fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value,group_name1,group_name2)
                 #fig2 = generate_bar_graph(selected_test, group1_values, group2_values, group1_unit, p_value)
 
                 # Add reference range to the plot as a shaded region or horizontal lines
