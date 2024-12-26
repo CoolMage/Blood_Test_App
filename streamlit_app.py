@@ -3,9 +3,11 @@ import fitz
 import pandas as pd
 import io
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from scipy import stats
 import glob
 import os
+from math import ceil
 
 
 #streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false
@@ -71,6 +73,133 @@ def generate_box_plot(test_name, values1, values2, unit, p_value,group_name1,gro
 
     return fig
 
+def generate_multiple_box_plots(selected_tests, combined_group1, combined_group2, group_name1, group_name2, df_ref_vel, ref_test_key_table):
+    # Parameters for reference shapes
+    fillcolor = "rgba(0, 128, 0, 0.2)"
+    line_color = "green"
+    line_dash = "dash"
+    plots_per_row = 2
+    total_plots = len(selected_tests)
+    rows = ceil(total_plots / plots_per_row)
+
+    # Create subplots with the specified layout and spacing
+    fig = make_subplots(
+        rows=rows,
+        cols=plots_per_row,
+        subplot_titles=selected_tests,
+        vertical_spacing=0.2  # Add spacing between rows
+    )
+
+    for idx, test_name in enumerate(selected_tests):
+        # Determine row and column position for the subplot
+        row = (idx // plots_per_row) + 1
+        col = (idx % plots_per_row) + 1
+
+        # Prepare data for the current test
+        group1_values, group2_values = prepare_test_data(
+            combined_group1, combined_group2, test_name
+        )
+
+        # Extract the unit for the test from the combined data (assuming it exists)
+        unit = combined_group1[combined_group1["Test"] == test_name]["Jednotka"].iloc[0] if "Jednotka" in combined_group1.columns else "Unit"
+        unit = f"[{unit}]"  # Format the unit in square brackets
+
+        # Generate box plots for each group
+        fig.add_trace(
+            go.Box(
+                y=group1_values,
+                name=f"{group_name1}",
+                boxpoints='all', jitter=0.3, pointpos=-1.8
+            ),
+            row=row, col=col
+        )
+        fig.add_trace(
+            go.Box(
+                y=group2_values,
+                name=f"{group_name2}",
+                boxpoints='all', jitter=0.3, pointpos=-1.8
+            ),
+            row=row, col=col
+        )
+
+        # Retrieve reference range for the current test
+        ref_min, ref_max = None, None
+        if not df_ref_vel.empty and test_name in ref_test_key_table["Unique_Values"].values:
+            key_name = ref_test_key_table[ref_test_key_table["Unique_Values"] == test_name]["Unique_Values_Ref"].iloc[0]
+            ref_row = df_ref_vel[df_ref_vel["TEST"] == key_name]
+            if not ref_row.empty:
+                ref_range = ref_row["RANGE"].iloc[0]
+                ref_min, ref_max = map(float, ref_range.replace(" ", "").split("-"))
+
+        # Add reference range and annotations to the current subplot if available
+        if ref_min is not None and ref_max is not None:
+            # Add shaded reference range
+            fig.add_shape(
+                type="rect",
+                x0=0,
+                x1=1,  # Span the entire subplot width
+                y0=ref_min,
+                y1=ref_max,
+                fillcolor=fillcolor,
+                line=dict(width=0),  # No border for the rectangle
+                xref="x" + str(idx + 1),  # Align to the specific subplot's x-axis
+                yref="y" + str(idx + 1)   # Align to the specific subplot's y-axis
+            )
+
+            # Add dashed lines for the lower and upper boundaries
+            fig.add_shape(
+                type="line",
+                x0=0,
+                x1=1,
+                y0=ref_min,
+                y1=ref_min,
+                line=dict(color=line_color, dash=line_dash),
+                xref="x" + str(idx + 1),
+                yref="y" + str(idx + 1)
+            )
+            fig.add_shape(
+                type="line",
+                x0=0,
+                x1=1,
+                y0=ref_max,
+                y1=ref_max,
+                line=dict(color=line_color, dash=line_dash),
+                xref="x" + str(idx + 1),
+                yref="y" + str(idx + 1)
+            )
+
+            # Add annotations for the reference limits
+            fig.add_annotation(
+                x=1.05,  # Slightly to the right of the subplot
+                y=ref_min,
+                text=f"{ref_min:.2f}",
+                showarrow=False,
+                font=dict(color="green"),
+                xref="x" + str(idx + 1),  # Align to the specific subplot's x-axis
+                yref="y" + str(idx + 1)   # Align to the specific subplot's y-axis
+            )
+            fig.add_annotation(
+                x=1.05,  # Slightly to the right of the subplot
+                y=ref_max,
+                text=f"{ref_max:.2f}",
+                showarrow=False,
+                font=dict(color="green"),
+                xref="x" + str(idx + 1),
+                yref="y" + str(idx + 1)
+            )
+
+        # Set y-axis title to include the unit
+        fig.update_yaxes(title_text=f"{unit}", row=row, col=col)
+
+    # Update overall layout
+    fig.update_layout(
+        title="Multiple Box Plots Comparison",
+        showlegend=False,
+        height=350 * rows,  # Adjust height based on the number of rows
+        width=800  # Fixed width for the entire figure
+    )
+
+    return fig
 def generate_bar_graph(test_name, values1, values2, unit, p_value):
     fig = go.Figure()
 
@@ -573,15 +702,43 @@ with tab2:
 
 
                 st.plotly_chart(fig, use_container_width=True)
-                # Display the updated plot
-                #col3, col4 = st.columns(2)
-
-                #with col3:
-                #    st.plotly_chart(fig, use_container_width=True)
-                #with col4:
-                #    st.plotly_chart(fig2, use_container_width=True)
                 
                 try:
                     st.write(f"Reference Limits: {ref_min}-{ref_max} [{group1_unit}]")
                 except Exception as e:
                     st.error(f"There are no reference values for this graph.")
+
+
+                filtered_group1["Group"] = group_name1
+                filtered_group2["Group"] = group_name2
+                combined_table = pd.concat([filtered_group1, filtered_group2], ignore_index=True)
+                
+                # Add reference information as the last row
+                reference_info = {
+                    "Category": "Reference Info",
+                    "Test": selected_test,
+                    "Jednotka": group1_unit if ref_unit is None else f"[{ref_unit}]",
+                    "Ref. meze": f"{ref_min:.2f} - {ref_max:.2f}" if ref_min is not None and ref_max is not None else "No reference",
+                    "Hodnocení": "Reference Range",
+                    "Group": "Reference"  # Clearly label this as reference
+                }
+                combined_table = pd.concat([combined_table, pd.DataFrame([reference_info])], ignore_index=True)
+
+                st.write("Combined Table:")
+                st.dataframe(combined_table)
+
+                # Create CSV buffer
+                csv_combined_buffer = io.BytesIO()
+                combined_table.to_csv(csv_combined_buffer, index=False, encoding="utf-8")
+                csv_combined_buffer.seek(0)
+
+
+
+                 # Функиця мультиплота. В разработке.   
+            #selected_tests = st.multiselect("Select Tests for Multi Box Plot:", options=available_tests, default=available_tests[:3])
+
+            #if selected_tests:
+             #   multi_box_plot_fig = generate_multiple_box_plots(
+              #      selected_tests, combined_group1, combined_group2, group_name1, group_name2, df_ref_vel, ref_test_key_table
+               # )
+                #st.plotly_chart(multi_box_plot_fig, use_container_width=True)
