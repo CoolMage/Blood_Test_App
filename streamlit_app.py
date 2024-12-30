@@ -4,10 +4,13 @@ import pandas as pd
 import io
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.io as pio
 from scipy import stats
 import glob
 import os
 from math import ceil
+import zipfile
+
 
 
 #streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false
@@ -287,85 +290,6 @@ def ___add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba
 
     return fig
 
-
-def ___generate_bar_plot(test_name, values1, values2, unit, group_name1, group_name2, p_value=None, bar_colors=("blue", "red")):
-    """
-    Generates a bar plot comparing two groups with individual data points overlaid as dots.
-
-    Parameters:
-    - test_name: str
-        The name of the test or metric being compared.
-    - values1: list of float
-        Values for the first group.
-    - values2: list of float
-        Values for the second group.
-    - unit: str
-        The unit of the y-axis values (e.g., "kg", "%", etc.).
-    - group_name1: str
-        Name of the first group.
-    - group_name2: str
-        Name of the second group.
-    - p_value: float, optional
-        The p-value of the comparison for statistical significance.
-    - bar_colors: tuple of str, optional (default=("blue", "red"))
-        Colors for the bars of the two groups.
-
-    Returns:
-    - fig: plotly.graph_objects.Figure
-        The generated bar plot figure with overlaid data points.
-    """
-    # Calculate means and standard deviations for the groups
-    mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
-    std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
-    std2 = (sum((x - mean2) ** 2 for x in values2) / len(values2)) ** 0.5
-
-    # Create the bar plot
-    fig = go.Figure()
-
-    fig.add_trace(go.Bar(
-        name=group_name1,
-        x=[group_name1],
-        y=[mean1],
-        error_y=dict(type='data', array=[std1]),
-        marker_color=bar_colors[0]
-    ))
-
-    fig.add_trace(go.Bar(
-        name=group_name2,
-        x=[group_name2],
-        y=[mean2],
-        error_y=dict(type='data', array=[std2]),
-        marker_color=bar_colors[1]
-    ))
-
-    # Overlay individual data points as dots
-    fig.add_trace(go.Scatter(
-        x=[group_name1] * len(values1),
-        y=values1,
-        mode='markers',
-        marker=dict(color='black', size=8, symbol='circle'),
-        name=f"{group_name1} Data"
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=[group_name2] * len(values2),
-        y=values2,
-        mode='markers',
-        marker=dict(color='black', size=8, symbol='circle'),
-        name=f"{group_name2} Data"
-    ))
-
-    # Add statistical test result to the title if provided
-    p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
-    fig.update_layout(
-        title=f"Comparison of {test_name}<br><sup>{p_value_text}</sup>",
-        yaxis_title=f"{unit or 'Unit'}",
-        xaxis_title="Groups",
-        barmode='group'
-    )
-
-    return fig
-
 #More style like paper
 def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max):
     """
@@ -399,9 +323,13 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     fillcolor="rgba(0, 128, 0, 0.2)"
     line_color="green"
     line_dash="dash"
-    mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
-    std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
-    std2 = (sum((x - mean2) ** 2 for x in values2) / len(values2)) ** 0.5
+    if len(values1) > 0 and len(values2) > 0:
+        mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
+        std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
+        std2 = (sum((x - mean2) ** 2 for x in values2) / len(values2)) ** 0.5
+    else:
+        mean1, mean2 = None, None
+        std1, std2 = None, None
 
     # Create the bar plot
     fig = go.Figure()
@@ -704,8 +632,8 @@ def unit_conversion(key_name, values, from_unit, to_unit, molecular_weight=None,
             matches = [key for key in molecular_masses if key_name in key]
             if matches:
                 molecular_weight = molecular_masses[matches[0]]
-                st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
-                st.warning(f"The molecular weight is in the database! -- {molecular_weight} g/mol")
+                #st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
+                #st.warning(f"The molecular weight is in the database! -- {molecular_weight} g/mol")
             else:
                 print(f"No molecular weight for {key_name} in database.")
                 
@@ -719,8 +647,8 @@ def unit_conversion(key_name, values, from_unit, to_unit, molecular_weight=None,
             #)
 
             if not molecular_weight:
-                st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
-                st.warning("Molecular weight is required for the conversion. Returning original values.")
+                #st.warning(f"Conversion from {from_unit} to {to_unit} requires molecular weight!")
+                #st.warning("Molecular weight is required for the conversion. Returning original values.")
                 return values  # Return original values if molecular weight is not provided
 
         # Perform conversion for each value
@@ -1053,6 +981,63 @@ with tab2:
                 combined_table.to_csv(csv_combined_buffer, index=False, encoding="utf-8")
                 csv_combined_buffer.seek(0)
 
+            st.write("Download png of all graphs:")
+            checkbox_value = st.checkbox("Create all graphs")
+            if checkbox_value:
+                # Используем буферы в памяти для хранения изображений
+                zip_buffer = io.BytesIO()
+
+                with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                    for selected_test_all in available_tests:
+                        filtered_group1_all = combined_group1[combined_group1["Test"] == selected_test_all]
+                        filtered_group2_all = combined_group2[combined_group2["Test"] == selected_test_all]
+
+                        # Генерация графиков и справочных диапазонов
+                        if not filtered_group1_all.empty and not filtered_group2_all.empty:
+                            group1_values_all, group2_values_all = prepare_test_data(filtered_group1_all, filtered_group2_all, selected_test_all)
+                            group1_unit_all = filtered_group1_all["Jednotka"].iloc[0]
+                            group2_unit_all = filtered_group2_all["Jednotka"].iloc[0]
+
+                            # Выполнение статистического теста
+                            p_value_all = perform_statistical_test(group1_values_all, group2_values_all)
+
+                            # Добавление справочных диапазонов
+                            ref_min_all, ref_max_all = None, None
+                            if not df_ref_vel.empty and selected_test_all in ref_test_key_table["Unique_Values"].values:
+                                key_name_all = ref_test_key_table[ref_test_key_table["Unique_Values"] == selected_test_all]["Unique_Values_Ref"].iloc[0]
+                                ref_row_all = df_ref_vel[df_ref_vel["TEST"] == key_name_all]
+                                if not ref_row_all.empty:
+                                    ref_range_all = ref_row_all["RANGE"].iloc[0]
+                                    ref_min_all, ref_max_all = map(float, ref_range_all.replace(" ", "").split("-"))
+
+                            if ref_min_all is None or ref_max_all is None:
+                                ref_min_all, ref_max_all = 0, 0
+
+                            # Генерация графиков
+                            fig_all = generate_box_plot(selected_test_all, group1_values_all, group2_values_all, group1_unit_all, p_value_all, group_name1, group_name2, ref_min_all, ref_max_all)
+                            fig2_all = generate_bar_plot(selected_test_all, group1_values_all, group2_values_all, group1_unit_all, p_value_all, group_name1, group_name2, ref_min_all, ref_max_all)
+
+                            # Сохранение графиков в буферы памяти
+                            safe_test_name = selected_test_all.replace("/", "-")
+                            box_plot_buffer = io.BytesIO()
+                            bar_plot_buffer = io.BytesIO()
+                            
+                            pio.write_image(fig_all, box_plot_buffer, format="png")
+                            pio.write_image(fig2_all, bar_plot_buffer, format="png")
+
+                            # Добавление файлов в ZIP
+                            zip_file.writestr(f"{safe_test_name}_box_plot.png", box_plot_buffer.getvalue())
+                            zip_file.writestr(f"{safe_test_name}_bar_plot.png", bar_plot_buffer.getvalue())
+
+                zip_buffer.seek(0)
+
+                # Кнопка для загрузки ZIP
+                st.download_button(
+                    label="Download All Graphs",
+                    data=zip_buffer.getvalue(),
+                    file_name="all_graphs.zip",
+                    mime="application/zip"
+                )
 
 
   
