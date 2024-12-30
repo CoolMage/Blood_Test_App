@@ -56,7 +56,7 @@ def perform_statistical_test(values1, values2):
     return None
 
 # Function to generate a box plot
-def generate_box_plot(test_name, values1, values2, unit, p_value,group_name1,group_name2):
+def ___generate_box_plot(test_name, values1, values2, unit, p_value,group_name1,group_name2):
     fig = go.Figure()
 
     # Add box plots for both groups
@@ -73,7 +73,7 @@ def generate_box_plot(test_name, values1, values2, unit, p_value,group_name1,gro
 
     return fig
 
-def generate_multiple_box_plots(selected_tests, combined_group1, combined_group2, group_name1, group_name2, df_ref_vel, ref_test_key_table):
+def ___generate_multiple_box_plots(selected_tests, combined_group1, combined_group2, group_name1, group_name2, df_ref_vel, ref_test_key_table):
     # Parameters for reference shapes
     fillcolor = "rgba(0, 128, 0, 0.2)"
     line_color = "green"
@@ -200,7 +200,7 @@ def generate_multiple_box_plots(selected_tests, combined_group1, combined_group2
     )
 
     return fig
-def generate_bar_graph(test_name, values1, values2, unit, p_value):
+
     fig = go.Figure()
 
     # Add bars for Group 1
@@ -232,7 +232,7 @@ def generate_bar_graph(test_name, values1, values2, unit, p_value):
 
     return fig
 
-def add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba(0, 128, 0, 0.2)", line_color="green", line_dash="dash"):
+def ___add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba(0, 128, 0, 0.2)", line_color="green", line_dash="dash"):
     """
     Adds a reference range as a shaded rectangle and dashed boundary lines to a Plotly figure.
 
@@ -285,21 +285,330 @@ def add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba(0,
         line=dict(color=line_color, dash=line_dash),
     )
 
-    # Add annotations for the reference limits
-    fig.add_annotation(
-        x=1.55,  # Slightly to the right of the subplot
-        y=ref_min,
-        text=f"{ref_min:.2f}",
-        showarrow=False,
-        font=dict(color="green")
+    return fig
+
+
+def ___generate_bar_plot(test_name, values1, values2, unit, group_name1, group_name2, p_value=None, bar_colors=("blue", "red")):
+    """
+    Generates a bar plot comparing two groups with individual data points overlaid as dots.
+
+    Parameters:
+    - test_name: str
+        The name of the test or metric being compared.
+    - values1: list of float
+        Values for the first group.
+    - values2: list of float
+        Values for the second group.
+    - unit: str
+        The unit of the y-axis values (e.g., "kg", "%", etc.).
+    - group_name1: str
+        Name of the first group.
+    - group_name2: str
+        Name of the second group.
+    - p_value: float, optional
+        The p-value of the comparison for statistical significance.
+    - bar_colors: tuple of str, optional (default=("blue", "red"))
+        Colors for the bars of the two groups.
+
+    Returns:
+    - fig: plotly.graph_objects.Figure
+        The generated bar plot figure with overlaid data points.
+    """
+    # Calculate means and standard deviations for the groups
+    mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
+    std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
+    std2 = (sum((x - mean2) ** 2 for x in values2) / len(values2)) ** 0.5
+
+    # Create the bar plot
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        name=group_name1,
+        x=[group_name1],
+        y=[mean1],
+        error_y=dict(type='data', array=[std1]),
+        marker_color=bar_colors[0]
+    ))
+
+    fig.add_trace(go.Bar(
+        name=group_name2,
+        x=[group_name2],
+        y=[mean2],
+        error_y=dict(type='data', array=[std2]),
+        marker_color=bar_colors[1]
+    ))
+
+    # Overlay individual data points as dots
+    fig.add_trace(go.Scatter(
+        x=[group_name1] * len(values1),
+        y=values1,
+        mode='markers',
+        marker=dict(color='black', size=8, symbol='circle'),
+        name=f"{group_name1} Data"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[group_name2] * len(values2),
+        y=values2,
+        mode='markers',
+        marker=dict(color='black', size=8, symbol='circle'),
+        name=f"{group_name2} Data"
+    ))
+
+    # Add statistical test result to the title if provided
+    p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
+    fig.update_layout(
+        title=f"Comparison of {test_name}<br><sup>{p_value_text}</sup>",
+        yaxis_title=f"{unit or 'Unit'}",
+        xaxis_title="Groups",
+        barmode='group'
     )
-    fig.add_annotation(
-        x=1.55,  # Slightly to the right of the subplot
-        y=ref_max,
-        text=f"{ref_max:.2f}",
-        showarrow=False,
-        font=dict(color="green")
+
+    return fig
+
+#More style like paper
+def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max):
+    """
+    Generates a bar plot comparing two groups with individual data points overlaid as dots, styled for a publication-ready appearance.
+
+    Parameters:
+    - test_name: str
+        The name of the test or metric being compared.
+    - values1: list of float
+        Values for the first group.
+    - values2: list of float
+        Values for the second group.
+    - unit: str
+        The unit of the y-axis values (e.g., "kg", "%", etc.).
+    - group_name1: str
+        Name of the first group.
+    - group_name2: str
+        Name of the second group.
+    - p_value: float, optional
+        The p-value of the comparison for statistical significance.
+    - bar_colors: tuple of str, optional (default=("white", "white"))
+        Colors for the bars of the two groups (typically transparent or light colors).
+
+    Returns:
+    - fig: plotly.graph_objects.Figure
+        The generated bar plot figure with overlaid data points.
+    """
+    # Calculate means and standard deviations for the groups
+    bar_colors=("white", "gray")
+    group_count=2
+    fillcolor="rgba(0, 128, 0, 0.2)"
+    line_color="green"
+    line_dash="dash"
+    mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
+    std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
+    std2 = (sum((x - mean2) ** 2 for x in values2) / len(values2)) ** 0.5
+
+    # Create the bar plot
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        name=group_name1,
+        x=[group_name1],
+        y=[mean1],
+        error_y=dict(type='data', array=[std1], visible=True, color='black'),
+        marker=dict(color=bar_colors[0], line=dict(color='black', width=1.5))
+    ))
+
+    fig.add_trace(go.Bar(
+        name=group_name2,
+        x=[group_name2],
+        y=[mean2],
+        error_y=dict(type='data', array=[std2], visible=True, color='black'),
+        marker=dict(color=bar_colors[1], line=dict(color='black', width=1.5))
+    ))
+
+    # Overlay individual data points as dots
+    fig.add_trace(go.Scatter(
+        x=[group_name1] * len(values1),
+        y=values1,
+        mode='markers',
+        marker=dict(color='black', size=8, symbol='circle'),
+        name=f"{group_name1} Data"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=[group_name2] * len(values2),
+        y=values2,
+        mode='markers',
+        marker=dict(color='black', size=8, symbol='circle'),
+        name=f"{group_name2} Data"
+    ))
+
+    # Add statistical annotations if p-value is provided
+    annotations = []
+    if p_value is not None:
+        p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
+        annotations.append(dict(
+            x=0.5, y=max(max(values1), max(values2)) * 1.1,
+            text=p_value_text,
+            showarrow=False,
+            font=dict(size=14, color='black'),
+            xref="paper", yref="y"
+        ))
+
+    fig.add_shape(
+        type="rect",
+        x0=-0.5,
+        x1=group_count - 0.5,  # Extend based on group count
+        y0=ref_min,
+        y1=ref_max,
+        fillcolor=fillcolor,
+        line=dict(width=0),  # No border for the rectangle
     )
+
+    # Add dashed lines for the lower and upper boundaries of the reference range
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_min,
+        y1=ref_min,
+        line=dict(color=line_color, dash=line_dash),
+    )
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_max,
+        y1=ref_max,
+        line=dict(color=line_color, dash=line_dash),
+    )
+
+    ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits"
+    p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
+    # Update layout for publication style
+    fig.update_layout(
+        title=dict(
+            text=f"Comparison of {test_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            x=0.5,
+            xanchor='center',
+            yanchor='top'
+        ),
+        yaxis_title=f"{unit or 'Unit'}",
+        barmode='group',
+        plot_bgcolor="white",
+        xaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True),
+        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False),
+        annotations=annotations
+    )
+    
+    
+    return fig
+def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max):
+    """
+    Generates a box plot comparing two groups with individual data points overlaid as dots, styled for a publication-ready appearance.
+
+    Parameters:
+    - test_name: str
+        The name of the test or metric being compared.
+    - values1: list of float
+        Values for the first group.
+    - values2: list of float
+        Values for the second group.
+    - unit: str
+        The unit of the y-axis values (e.g., "kg", "%", etc.).
+    - p_value: float, optional
+        The p-value of the comparison for statistical significance.
+    - group_name1: str
+        Name of the first group.
+    - group_name2: str
+        Name of the second group.
+
+    Returns:
+    - fig: plotly.graph_objects.Figure
+        The generated box plot figure with overlaid data points.
+    """
+    # Create the box plot
+    fig = go.Figure()
+    group_count=2
+    fillcolor="rgba(0, 128, 0, 0.2)"
+    line_color="green"
+    line_dash="dash"
+
+    fig.add_trace(go.Box(
+        y=values1,
+        name=group_name1,
+        boxpoints='all',
+        jitter=0.3,
+        pointpos=-1.8,
+        marker=dict(color='black', size=8, symbol='circle'),
+        line=dict(color='black'),
+        fillcolor='white'
+    ))
+
+    fig.add_trace(go.Box(
+        y=values2,
+        name=group_name2,
+        boxpoints='all',
+        jitter=0.3,
+        pointpos=-1.8,
+        marker=dict(color='black', size=8, symbol='circle'),
+        line=dict(color='black'),
+        fillcolor='gray'
+    ))
+
+    # Add statistical annotations if p-value is provided
+    annotations = []
+    if p_value is not None:
+        p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
+        annotations.append(dict(
+            x=0.5, y=max(max(values1), max(values2)) * 1.1,
+            text=p_value_text,
+            showarrow=False,
+            font=dict(size=14, color='black'),
+            xref="paper", yref="y"
+        ))
+
+    fig.add_shape(
+        type="rect",
+        x0=-0.5,
+        x1=group_count - 0.5,  # Extend based on group count
+        y0=ref_min,
+        y1=ref_max,
+        fillcolor=fillcolor,
+        line=dict(width=0),  # No border for the rectangle
+    )
+
+    # Add dashed lines for the lower and upper boundaries of the reference range
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_min,
+        y1=ref_min,
+        line=dict(color=line_color, dash=line_dash),
+    )
+    fig.add_shape(
+        type="line",
+        x0=-0.5,
+        x1=group_count - 0.5,
+        y0=ref_max,
+        y1=ref_max,
+        line=dict(color=line_color, dash=line_dash),
+    )
+
+    ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits"
+    p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
+    # Update layout for publication style
+    fig.update_layout(
+        title=dict(
+            text=f"Comparison of {test_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            x=0.5,
+            xanchor='center',
+            yanchor='top'
+        ),
+        yaxis_title=f"{unit or 'Unit'}",
+        plot_bgcolor="white",
+        xaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True),
+        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False),
+        annotations=annotations
+    )
+
     return fig
 
 
@@ -666,10 +975,6 @@ with tab2:
                 # Perform statistical test
                 p_value = perform_statistical_test(group1_values, group2_values)
 
-                # Generate box plot
-                fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value,group_name1,group_name2)
-                #fig2 = generate_bar_graph(selected_test, group1_values, group2_values, group1_unit, p_value)
-
                 # Add reference range to the plot as a shaded region or horizontal lines
                 # Add reference range to the plot as a shaded region or horizontal lines
                 if not df_ref_vel.empty and selected_test in ref_test_key_table["Unique_Values"].values:
@@ -708,15 +1013,16 @@ with tab2:
 
                 # Only add shapes if ref_min and ref_max are valid
                 if ref_min is not None and ref_max is not None:
-                    # Add a shaded region for the reference range
-                    fig = add_reference_range(fig, ref_min, ref_max)
-                    #fig2 = add_reference_range(fig2, ref_min, ref_max)
-
+                    # Generate box plot
+                    fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1,group_name2,ref_min, ref_max)
+                    #fig2 = generate_bar_graph(selected_test, group1_values, group2_values, group1_unit, p_value)
+                    fig2 = generate_bar_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1, group_name2,ref_min, ref_max)
+                    
                 else:
                     st.warning("Reference range could not be plotted due to missing or invalid data.")
 
-
                 st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig2, use_container_width=True)
                 
                 try:
                     st.write(f"Reference Limits: {ref_min}-{ref_max} [{group1_unit}]")
