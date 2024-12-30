@@ -285,6 +285,21 @@ def add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba(0,
         line=dict(color=line_color, dash=line_dash),
     )
 
+    # Add annotations for the reference limits
+    fig.add_annotation(
+        x=1.55,  # Slightly to the right of the subplot
+        y=ref_min,
+        text=f"{ref_min:.2f}",
+        showarrow=False,
+        font=dict(color="green")
+    )
+    fig.add_annotation(
+        x=1.55,  # Slightly to the right of the subplot
+        y=ref_max,
+        text=f"{ref_max:.2f}",
+        showarrow=False,
+        font=dict(color="green")
+    )
     return fig
 
 
