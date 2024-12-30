@@ -1055,11 +1055,4 @@ with tab2:
 
 
 
-                 # Функиця мультиплота. В разработке.   
-            #selected_tests = st.multiselect("Select Tests for Multi Box Plot:", options=available_tests, default=available_tests[:3])
-
-            #if selected_tests:
-             #   multi_box_plot_fig = generate_multiple_box_plots(
-              #      selected_tests, combined_group1, combined_group2, group_name1, group_name2, df_ref_vel, ref_test_key_table
-               # )
-                #st.plotly_chart(multi_box_plot_fig, use_container_width=True)
+  

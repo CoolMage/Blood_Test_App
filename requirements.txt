@@ -3,3 +3,4 @@ PyMuPDF
 pandas
 plotly
 scipy
+math
