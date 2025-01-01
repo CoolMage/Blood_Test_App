@@ -3,6 +3,5 @@ PyMuPDF
 pandas
 plotly
 scipy
-math
 kaleido
 zipfile
