@@ -18,6 +18,31 @@ import zipfile
 # Streamlit app title
 st.title("PDF Data Extractor and Blood Plot Comparison")
 
+def update_duplicate_test_names(df):
+    """
+    Updates test names in the DataFrame by appending category names
+    in parentheses if the same test appears in multiple categories.
+
+    Parameters:
+    df (pd.DataFrame): The input DataFrame containing 'Test' and 'Category' columns.
+
+    Returns:
+    pd.DataFrame: The updated DataFrame with unique test names.
+    """
+    duplicated_tests = (
+        df.groupby("Test")
+        .filter(lambda x: x["Category"].nunique() > 1)["Test"]
+        .unique()
+    )
+
+    for test in duplicated_tests:
+        df.loc[df["Test"] == test, "Test"] = (
+            df[df["Test"] == test]
+            .apply(lambda row: f"{row['Test']} ({row['Category']})", axis=1)
+        )
+
+    return df
+
 # Function to load and combine data from multiple CSV files
 def load_data(files):
     combined_data = pd.DataFrame()
@@ -763,19 +788,11 @@ with tab1:
                             "Ref. meze": str(ref_range) if ref_range else None,
                             "Hodnocení": hodnoceni
                         })
-
             # Convert to DataFrame
             df = pd.DataFrame(data)
             
-            # Store the extracted data in session state
-            # if "extracted_data" not in st.session_state:
-             #   st.session_state.extracted_data = []
-            #st.session_state.extracted_data.append(df)
-      #      if df.empty:
-       #         st.error("No data was extracted from the PDF. Please check the file content.")
-        #    else:
-         #       st.write("Extracted data preview:", df.head())
-            
+            df = update_duplicate_test_names(df)
+          
             # Create a downloadable CSV
             csv_buffer = io.BytesIO()
             df.to_csv(csv_buffer, index=False, encoding="utf-8")
