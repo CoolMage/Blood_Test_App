@@ -441,7 +441,7 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     # Update layout for publication style
     fig.update_layout(
         title=dict(
-            text=f"Comparison of {graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            text=f"{graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
             x=0.5,
             xanchor='center',
             yanchor='top'
@@ -557,7 +557,7 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
     # Update layout for publication style
     fig.update_layout(
         title=dict(
-            text=f"Comparison of {graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            text=f"{graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
             x=0.5,
             xanchor='center',
             yanchor='top'
