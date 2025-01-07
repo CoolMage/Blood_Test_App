@@ -316,7 +316,7 @@ def ___add_reference_range(fig, ref_min, ref_max, group_count=2, fillcolor="rgba
     return fig
 
 #More style like paper
-def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max):
+def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max, graf_name):
     """
     Generates a bar plot comparing two groups with individual data points overlaid as dots, styled for a publication-ready appearance.
 
@@ -348,6 +348,10 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     fillcolor="rgba(0, 128, 0, 0.2)"
     line_color="green"
     line_dash="dash"
+    if graf_name == None:
+        graf_name = test_name
+
+
     if len(values1) > 0 and len(values2) > 0:
         mean1, mean2 = sum(values1) / len(values1), sum(values2) / len(values2)
         std1 = (sum((x - mean1) ** 2 for x in values1) / len(values1)) ** 0.5
@@ -393,16 +397,16 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     ))
 
     # Add statistical annotations if p-value is provided
-    annotations = []
-    if p_value is not None:
-        p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
-        annotations.append(dict(
-            x=0.5, y=max(max(values1), max(values2)) * 1.1,
-            text=p_value_text,
-            showarrow=False,
-            font=dict(size=14, color='black'),
-            xref="paper", yref="y"
-        ))
+    #annotations = []
+    #if p_value is not None:
+    #    p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
+    #    annotations.append(dict(
+    #        x=0.5, y=max(max(values1), max(values2)) * 1.1,
+    #        text=p_value_text,
+    #        showarrow=False,
+    #        font=dict(size=14, color='black'),
+    #        xref="paper", yref="y"
+    #    ))
 
     fig.add_shape(
         type="rect",
@@ -437,7 +441,7 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     # Update layout for publication style
     fig.update_layout(
         title=dict(
-            text=f"Comparison of {test_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            text=f"Comparison of {graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
             x=0.5,
             xanchor='center',
             yanchor='top'
@@ -446,13 +450,13 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
         barmode='group',
         plot_bgcolor="white",
         xaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True),
-        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False),
-        annotations=annotations
+        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False)
+        #annotations=annotations
     )
     
     
     return fig
-def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max):
+def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, group_name2,ref_min, ref_max, graf_name):
     """
     Generates a box plot comparing two groups with individual data points overlaid as dots, styled for a publication-ready appearance.
 
@@ -476,6 +480,9 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
     - fig: plotly.graph_objects.Figure
         The generated box plot figure with overlaid data points.
     """
+    if graf_name == None:
+        graf_name = test_name
+
     # Create the box plot
     fig = go.Figure()
     group_count=2
@@ -506,16 +513,16 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
     ))
 
     # Add statistical annotations if p-value is provided
-    annotations = []
-    if p_value is not None:
-        p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
-        annotations.append(dict(
-            x=0.5, y=max(max(values1), max(values2)) * 1.1,
-            text=p_value_text,
-            showarrow=False,
-            font=dict(size=14, color='black'),
-            xref="paper", yref="y"
-        ))
+    #annotations = []
+    #if p_value is not None:
+    #    p_value_text = "***" if p_value < 0.001 else "**" if p_value < 0.01 else "*" if p_value < 0.05 else "ns"
+    #    annotations.append(dict(
+    #        x=0.5, y=max(max(values1), max(values2)) * 1.1,
+    #        text=p_value_text,
+    #        showarrow=False,
+    #        font=dict(size=14, color='black'),
+    #        xref="paper", yref="y"
+    #    ))
 
     fig.add_shape(
         type="rect",
@@ -550,7 +557,7 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
     # Update layout for publication style
     fig.update_layout(
         title=dict(
-            text=f"Comparison of {test_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
+            text=f"Comparison of {graf_name}<br><sup>{ref_text}</sup><br><sup>{p_value_text}</sup>",
             x=0.5,
             xanchor='center',
             yanchor='top'
@@ -558,8 +565,8 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
         yaxis_title=f"{unit or 'Unit'}",
         plot_bgcolor="white",
         xaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True),
-        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False),
-        annotations=annotations
+        yaxis=dict(showline=True, linewidth=1, linecolor='black', mirror=True, zeroline=False)
+        #annotations=annotations
     )
 
     return fig
@@ -801,7 +808,7 @@ with tab1:
             #st.write(f"CSV buffer size: {len(csv_buffer.getvalue())} bytes")
             
             # Streamlit download button
-            file_name = f"{uploaded_file.name.split('.')[0]}_extracted_data.csv"
+            file_name = f"{uploaded_file.name.split('.')[0]}_ext_data.csv"
             
             st.download_button(
                 label=f"Download Extracted Data from {uploaded_file.name}",
@@ -911,6 +918,10 @@ with tab2:
             st.write("Filtered Data for Group 2:")
             st.dataframe(filtered_group2)
 
+            graf_name = st.text_input("Enter Plot name:")
+            if not graf_name:
+                graf_name = None
+
             # Generate box plots and reference ranges
             if not filtered_group1.empty and not filtered_group2.empty:
                 group1_values, group2_values = prepare_test_data(filtered_group1, filtered_group2, selected_test)
@@ -959,9 +970,9 @@ with tab2:
                 # Only add shapes if ref_min and ref_max are valid
                 if ref_min is not None and ref_max is not None:
                     # Generate box plot
-                    fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1,group_name2,ref_min, ref_max)
+                    fig = generate_box_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1,group_name2,ref_min, ref_max, graf_name)
                     #fig2 = generate_bar_graph(selected_test, group1_values, group2_values, group1_unit, p_value)
-                    fig2 = generate_bar_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1, group_name2,ref_min, ref_max)
+                    fig2 = generate_bar_plot(selected_test, group1_values, group2_values, group1_unit, p_value, group_name1, group_name2,ref_min, ref_max, graf_name)
                     
                 else:
                     st.warning("Reference range could not be plotted due to missing or invalid data.")
