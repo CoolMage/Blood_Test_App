@@ -69,6 +69,12 @@ def prepare_test_data(data_group1, data_group2, test_name):
     group1_values = group1_values.str.replace(",", ".", regex=False)
     group2_values = group2_values.str.replace(",", ".", regex=False)
 
+    group1_values = group1_values.str.replace("negativní", "0", regex=False)
+    group2_values = group2_values.str.replace("negativní", "0", regex=False)
+
+    group1_values = group1_values.str.replace("pozitivní", "1", regex=False)
+    group2_values = group2_values.str.replace("pozitivní", "1", regex=False)
+
     # Convert to numeric and drop NaN values
     group1_values = pd.to_numeric(group1_values, errors='coerce').dropna()
     group2_values = pd.to_numeric(group2_values, errors='coerce').dropna()
@@ -407,36 +413,38 @@ def generate_bar_plot(test_name, values1, values2, unit, p_value, group_name1, g
     #        font=dict(size=14, color='black'),
     #        xref="paper", yref="y"
     #    ))
+    ref_text = ""
+    if ref_min and ref_max != 0:
+        fig.add_shape(
+            type="rect",
+            x0=-0.5,
+            x1=group_count - 0.5,  # Extend based on group count
+            y0=ref_min,
+            y1=ref_max,
+            fillcolor=fillcolor,
+            line=dict(width=0),  # No border for the rectangle
+        )
 
-    fig.add_shape(
-        type="rect",
-        x0=-0.5,
-        x1=group_count - 0.5,  # Extend based on group count
-        y0=ref_min,
-        y1=ref_max,
-        fillcolor=fillcolor,
-        line=dict(width=0),  # No border for the rectangle
-    )
+        # Add dashed lines for the lower and upper boundaries of the reference range
+        fig.add_shape(
+            type="line",
+            x0=-0.5,
+            x1=group_count - 0.5,
+            y0=ref_min,
+            y1=ref_min,
+            line=dict(color=line_color, dash=line_dash),
+        )
+        fig.add_shape(
+            type="line",
+            x0=-0.5,
+            x1=group_count - 0.5,
+            y0=ref_max,
+            y1=ref_max,
+            line=dict(color=line_color, dash=line_dash),
+        )
 
-    # Add dashed lines for the lower and upper boundaries of the reference range
-    fig.add_shape(
-        type="line",
-        x0=-0.5,
-        x1=group_count - 0.5,
-        y0=ref_min,
-        y1=ref_min,
-        line=dict(color=line_color, dash=line_dash),
-    )
-    fig.add_shape(
-        type="line",
-        x0=-0.5,
-        x1=group_count - 0.5,
-        y0=ref_max,
-        y1=ref_max,
-        line=dict(color=line_color, dash=line_dash),
-    )
+        ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits" 
 
-    ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits"
     p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
     # Update layout for publication style
     fig.update_layout(
@@ -523,36 +531,37 @@ def generate_box_plot(test_name, values1, values2, unit, p_value, group_name1, g
     #        font=dict(size=14, color='black'),
     #        xref="paper", yref="y"
     #    ))
+    ref_text = ""
+    if ref_min and ref_max != 0:
+        fig.add_shape(
+            type="rect",
+            x0=-0.5,
+            x1=group_count - 0.5,  # Extend based on group count
+            y0=ref_min,
+            y1=ref_max,
+            fillcolor=fillcolor,
+            line=dict(width=0),  # No border for the rectangle
+        )
 
-    fig.add_shape(
-        type="rect",
-        x0=-0.5,
-        x1=group_count - 0.5,  # Extend based on group count
-        y0=ref_min,
-        y1=ref_max,
-        fillcolor=fillcolor,
-        line=dict(width=0),  # No border for the rectangle
-    )
+        # Add dashed lines for the lower and upper boundaries of the reference range
+        fig.add_shape(
+            type="line",
+            x0=-0.5,
+            x1=group_count - 0.5,
+            y0=ref_min,
+            y1=ref_min,
+            line=dict(color=line_color, dash=line_dash),
+        )
+        fig.add_shape(
+            type="line",
+            x0=-0.5,
+            x1=group_count - 0.5,
+            y0=ref_max,
+            y1=ref_max,
+            line=dict(color=line_color, dash=line_dash),
+        )
 
-    # Add dashed lines for the lower and upper boundaries of the reference range
-    fig.add_shape(
-        type="line",
-        x0=-0.5,
-        x1=group_count - 0.5,
-        y0=ref_min,
-        y1=ref_min,
-        line=dict(color=line_color, dash=line_dash),
-    )
-    fig.add_shape(
-        type="line",
-        x0=-0.5,
-        x1=group_count - 0.5,
-        y0=ref_max,
-        y1=ref_max,
-        line=dict(color=line_color, dash=line_dash),
-    )
-
-    ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits"
+        ref_text = f"Reference Limits: {ref_min}-{ref_max} [{unit}]" if ref_min is not None and ref_max is not None else "No sufficient data for reference limits"
     p_value_text = f"p = {p_value:.4f}" if p_value is not None else "No sufficient data for statistical test"
     # Update layout for publication style
     fig.update_layout(
